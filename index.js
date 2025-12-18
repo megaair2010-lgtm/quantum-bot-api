@@ -3,59 +3,56 @@ import axios from "axios";
 import crypto from "crypto";
 
 const app = express();
-app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("API Quantum Bot rodando 🚀");
+  res.send("API Quantum Bot Binance rodando 🚀");
 });
 
 app.get("/saldo", async (req, res) => {
-  const API_KEY = process.env.BYBIT_KEY;
-  const API_SECRET = process.env.BYBIT_SECRET;
+  const API_KEY = process.env.BINANCE_KEY;
+  const API_SECRET = process.env.BINANCE_SECRET;
 
   if (!API_KEY || !API_SECRET) {
-    return res.status(500).json({ error: "API não configurada" });
+    return res.status(500).json({ error: "API Binance não configurada" });
   }
 
   try {
-    const timestamp = Date.now().toString();
-    const recvWindow = "5000";
+    const timestamp = Date.now();
+    const query = `timestamp=${timestamp}`;
 
-    const params = "accountType=UNIFIED";
-    const payload = timestamp + API_KEY + recvWindow + params;
-
-    const sign = crypto
+    const signature = crypto
       .createHmac("sha256", API_SECRET)
-      .update(payload)
+      .update(query)
       .digest("hex");
 
     const response = await axios.get(
-      "https://api.bybit.com/v5/account/wallet-balance",
+      `https://api.binance.com/api/v3/account?${query}&signature=${signature}`,
       {
-        params: { accountType: "UNIFIED" },
         headers: {
-          "X-BAPI-API-KEY": API_KEY,
-          "X-BAPI-TIMESTAMP": timestamp,
-          "X-BAPI-RECV-WINDOW": recvWindow,
-          "X-BAPI-SIGN": sign
+          "X-MBX-APIKEY": API_KEY
         }
       }
     );
 
-    const balance =
-      response.data?.result?.list?.[0]?.totalWalletBalance ?? "0.00";
+    const balances = response.data.balances
+      .filter(b => parseFloat(b.free) > 0 || parseFloat(b.locked) > 0)
+      .map(b => ({
+        asset: b.asset,
+        free: b.free,
+        locked: b.locked
+      }));
 
-    res.json({ balance });
+    res.json({ balances });
   } catch (err) {
-    console.error("BYBIT ERROR:", err.response?.data || err.message);
+    console.error(err.response?.data || err.message);
     res.status(500).json({
-      error: "Erro ao buscar saldo",
-      bybit: err.response?.data || null
+      error: "Erro ao buscar saldo Binance",
+      binance: err.response?.data || null
     });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Servidor rodando na porta", PORT);
+  console.log("Servidor Binance rodando na porta", PORT);
 });
