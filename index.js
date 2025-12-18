@@ -21,24 +21,37 @@ app.get("/saldo", async (req, res) => {
     const timestamp = Date.now().toString();
     const recvWindow = "5000";
 
-    const query = `api_key=${API_KEY}&recv_window=${recvWindow}&timestamp=${timestamp}`;
+    const params = "accountType=UNIFIED";
+    const payload = timestamp + API_KEY + recvWindow + params;
+
     const sign = crypto
       .createHmac("sha256", API_SECRET)
-      .update(query)
+      .update(payload)
       .digest("hex");
 
-    const url = `https://api.bybit.com/v5/account/wallet-balance?accountType=SPOT&${query}&sign=${sign}`;
-
-
-    const r = await axios.get(url);
+    const response = await axios.get(
+      "https://api.bybit.com/v5/account/wallet-balance",
+      {
+        params: { accountType: "UNIFIED" },
+        headers: {
+          "X-BAPI-API-KEY": API_KEY,
+          "X-BAPI-TIMESTAMP": timestamp,
+          "X-BAPI-RECV-WINDOW": recvWindow,
+          "X-BAPI-SIGN": sign
+        }
+      }
+    );
 
     const balance =
-      r.data?.result?.list?.[0]?.totalWalletBalance ?? "0.00";
+      response.data?.result?.list?.[0]?.totalWalletBalance ?? "0.00";
 
     res.json({ balance });
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ error: "Erro ao buscar saldo" });
+    console.error("BYBIT ERROR:", err.response?.data || err.message);
+    res.status(500).json({
+      error: "Erro ao buscar saldo",
+      bybit: err.response?.data || null
+    });
   }
 });
 
