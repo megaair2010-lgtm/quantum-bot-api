@@ -27,7 +27,8 @@ app.get("/saldo", async (req, res) => {
       .update(query)
       .digest("hex");
 
-    const url = `https://api.bybit.com/v5/account/wallet-balance?accountType=UNIFIED&${query}&sign=${sign}`;
+    const url = `https://api.bybit.com/v5/account/wallet-balance?accountType=SPOT&${query}&sign=${sign}`;
+
 
     const r = await axios.get(url);
 
