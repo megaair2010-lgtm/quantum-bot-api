@@ -1,5 +1,13 @@
 {
-  "balances": [
-    { "asset": "USDT", "balance": "123.45" }
-  ]
+  "name": "quantum-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "axios": "^1.7.9"
+  }
 }
