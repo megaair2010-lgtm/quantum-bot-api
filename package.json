@@ -1,5 +1,5 @@
 {
-  "name": "quantum-bot",
+  "name": "quantum-bot-bybit",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
@@ -7,7 +7,8 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "axios": "^1.7.9"
+    "axios": "^1.6.0",
+    "crypto": "^1.0.1",
+    "express": "^4.18.2"
   }
 }
